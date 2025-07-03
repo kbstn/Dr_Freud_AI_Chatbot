@@ -120,6 +120,12 @@ def main():
         div[data-testid="stHorizontalBlock"] div[data-testid="stImage"] {
             display: none;
         }
+        /* Automatically adjust chat container height on mobile.
+           This calculates the available vertical space by subtracting an
+           estimated height for the header and chat input from the total viewport height. */
+        div[style*="height: 550px"] {
+            height: calc(100vh - 200px) !important;
+        }
     }
     </style>
     """, unsafe_allow_html=True)

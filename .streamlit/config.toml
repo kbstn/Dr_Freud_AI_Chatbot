@@ -1,2 +1,3 @@
 [server]
 folderWatchBlacklist = ["__pycache__"]
+fileWatcherType = "poll"
