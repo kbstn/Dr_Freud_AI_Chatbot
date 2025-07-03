@@ -42,57 +42,50 @@ def show_settings():
     return model_name, temperature, enable_web_search
 
 def show_chat_interface():
-    """Show the main chat interface"""
-    # Display chat messages
+    """Show the main chat interface with a fixed layout."""
+    # We use a container with a fixed height to ensure the chat input stays at the bottom.
+    message_container = st.container(height=700)
+
+    # Display chat messages from history
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
+        with message_container.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Chat input
+    # Accept user input
     if prompt := st.chat_input("Wer stört mich bei der Arbeit?"):
-        # Add user message to chat history
+        # Add user message to chat history and display it
         st.session_state.messages.append({"role": "user", "content": prompt})
-        
-        # Display user message
-        with st.chat_message("user"):
+        with message_container.chat_message("user"):
             st.markdown(prompt)
         
-        # Get agent response
-        with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            full_response = ""
-
-            # Get agent instance
-            agent = get_agent(
-                st.session_state.model_name,
-                st.session_state.temperature,
-                st.session_state.enable_web_search,
-                st.session_state.current_prompt
-            )
-            
-            # Get response
-            response = agent.run_sync(prompt)
-            # Handle different response formats
-            if hasattr(response, 'output'):
-                full_response = response.output
-            elif hasattr(response, 'content'):
-                full_response = response.content
-            else:
-                full_response = str(response)
-            
-            # Display response
-            message_placeholder.markdown(full_response)
+        # Get assistant response
+        with message_container.chat_message("assistant"):
+            with st.spinner("Dr. Freud denkt nach..."):
+                agent = get_agent(
+                    st.session_state.model_name,
+                    st.session_state.temperature,
+                    st.session_state.enable_web_search,
+                    st.session_state.current_prompt
+                )
+                response = agent.run_sync(prompt)
+                
+                # Handle different response formats
+                if hasattr(response, 'output'):
+                    full_response = response.output
+                elif hasattr(response, 'content'):
+                    full_response = response.content
+                else:
+                    full_response = str(response)
+                
+                st.markdown(full_response)
         
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# Initialize the agent
-@st.cache_resource
+# Initialize the agent with cache that depends on all parameters including system_prompt
+@st.cache_resource(hash_funcs={Agent: lambda _: None}, show_spinner="Initializing Dr. Freud's brain...")
 def get_agent(model_name, temperature, enable_web_search, system_prompt):
-    print("\n=== SYSTEM PROMPT ===")
-    print(system_prompt)
-    print("==================\n")
-    
+    """Initializes and returns the Pydantic-AI Agent based on current settings."""
     # Initialize model
     model = OpenAIResponsesModel(model_name)
     
@@ -126,6 +119,8 @@ def main():
         st.session_state.enable_web_search = False
     if "current_prompt" not in st.session_state:
         st.session_state.current_prompt = SYSTEM_PROMPT
+    if "last_prompt" not in st.session_state:
+        st.session_state.last_prompt = st.session_state.current_prompt
 
     # Set page config
     st.set_page_config(
@@ -166,7 +161,27 @@ def main():
     with col2:
         # Show prompt editor
         st.title("🧠 Dr. Freuds Psyche")
-        st.session_state.current_prompt = show_prompt_editor(st.session_state.current_prompt)
+        
+        # Initialize prompt_editor in session state if it doesn't exist
+        if 'prompt_editor' not in st.session_state:
+            st.session_state.prompt_editor = st.session_state.current_prompt
+            
+        # Get the updated prompt from the editor
+        updated_prompt = show_prompt_editor(st.session_state.prompt_editor)
+        
+        # Update the current prompt only if it's different
+        if updated_prompt != st.session_state.current_prompt:
+            st.session_state.current_prompt = updated_prompt
+            # Note: We don't need to update st.session_state.prompt_editor here.
+            # The widget's state is the source of truth and is already updated.
+            # Trying to set it here causes the StreamlitAPIException.
+
+            # If the prompt has changed, clear the chat history
+            if st.session_state.last_prompt != st.session_state.current_prompt:
+                st.session_state.messages = []
+                st.session_state.last_prompt = st.session_state.current_prompt
+                st.toast("Dr. Freud's personality has been updated. The conversation is reset.")
+                st.rerun()
 
 if __name__ == "__main__":
     main()
