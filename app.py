@@ -34,7 +34,7 @@ with st.sidebar:
     st.title("⚙️ Settings")
     model_name = st.selectbox(
         "Choose a model",
-        ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
+        ["gpt-4.1-nano", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo", "gpt-4o-mini"],
         index=0
     )
     temperature = st.slider(
