@@ -108,6 +108,28 @@ def get_agent(model_name, temperature, enable_web_search, system_prompt):
     return agent
 
 def main():
+    # Inject custom CSS for mobile responsiveness
+    st.markdown("""
+    <style>
+    @media (max-width: 768px) {
+        /* Hide the prompt editor column on mobile to prioritize chat */
+        div[data-testid="stHorizontalBlock"] > div:nth-of-type(2) {
+            display: none;
+        }
+        /* Hide header images on mobile */
+        div[data-testid="stImage"] {
+            display: none;
+        }
+        /* Adjust chat container height for mobile.
+           NOTE: This selector is tied to the height=550 parameter in st.container().
+           If you change the height in the Python code, you must update it here too. */
+        div[style*="height: 550px"] {
+            height: 75vh !important;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Initialize session state
     if "messages" not in st.session_state:
         st.session_state.messages = []

@@ -45,7 +45,7 @@ def show_prompt_editor():
         presets = [default_preset]
     
     # Create columns for preset controls
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([2, 1])
     
     with col1:
         # Find if current prompt matches any preset
@@ -112,7 +112,7 @@ def show_prompt_editor():
 
     
     # Save as new preset
-    new_preset_col1, new_preset_col2 = st.columns([3, 1])
+    new_preset_col1, new_preset_col2 = st.columns([ 2, 1])
     with new_preset_col1:
         new_preset_name = st.text_input("Als neue Voreinstellung speichern", key="new_preset_name")
     with new_preset_col2:
