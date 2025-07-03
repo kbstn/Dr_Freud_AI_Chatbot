@@ -124,7 +124,7 @@ def main():
            This calculates the available vertical space by subtracting an
            estimated height for the header and chat input from the total viewport height. */
         div[style*="height: 550px"] {
-            height: calc(100vh - 200px) !important;
+            height: calc(100vh - 280px) !important;
         }
     }
     </style>
