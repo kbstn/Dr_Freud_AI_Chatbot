@@ -157,6 +157,8 @@ def main():
     .main .block-container {{
         padding-top: 1rem;
         padding-bottom: 1rem;
+        background-color: #1E1E1E;  /* Dark background for the main container */
+        color: #FFFFFF;  /* Default text color */
     }}
     
     /* Chat container styles */
@@ -167,40 +169,58 @@ def main():
         transform: translateX(-50%);
         width: 90%;
         max-width: 800px;
-        background: white;
+        background: #2D2D2D;  /* Darker background for input */
         border-radius: 20px;
         padding: 1rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         z-index: 999;
     }}
     
     /* Chat message area */
     [data-testid="stChatMessage"] {{
-        background-color: rgba(255, 255, 255, 0.85);
+        background-color: #2D2D2D;  /* Dark background for messages */
+        color: #FFFFFF;  /* White text */
         border-radius: 10px;
-        padding: 0.5rem 1rem;
+        padding: 0.8rem 1.2rem;
         margin: 0.5rem 0;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid #444444;
+    }}
+    
+    /* Style for user messages */
+    [data-testid="stChatMessage"][data-message-author-role="user"] {{
+        background-color: #3A3A3A;  /* Slightly different background for user messages */
+    }}
+    
+    /* Style for assistant messages */
+    [data-testid="stChatMessage"][data-message-author-role="assistant"] {{
+        background-color: #2D2D2D;  /* Dark background for assistant */
+    }}
+    
+    /* Adjust text color for better contrast */
+    .stMarkdown p, .stMarkdown ul, .stMarkdown ol, .stMarkdown li {{
+        color: #F0F0F0 !important;
     }}
     
     /* Mobile-specific styles */
     @media (max-width: 768px) {{
         .main .block-container {{
             padding-top: 0.5rem;
-            padding-bottom: 120px; /* Space for fixed input */
+            padding-bottom: 120px;
         }}
         
         h1 {{
             font-size: 1.5rem !important;
             margin-top: 0.5rem !important;
             text-align: center;
+            color: #FFFFFF;  /* Ensure title is white */
         }}
         
         /* Chat container with background */
         [data-testid="stChatMessageContainer"] {{
             {background_image_style}
             padding: 1rem;
-            margin-bottom: 100px; /* Space for fixed input */
+            margin-bottom: 100px;
+            background-color: rgba(30, 30, 30, 0.9);  /* Semi-transparent dark background */
         }}
         
         /* Hide header images on mobile to save space */
@@ -215,7 +235,20 @@ def main():
             {background_image_style}
             min-height: 60vh;
             padding: 2rem;
+            background-color: rgba(30, 30, 30, 0.9);  /* Semi-transparent dark background */
         }}
+    }}
+    
+    /* Style the chat input */
+    .stTextInput > div > div > input {{
+        color: #FFFFFF !important;
+        background-color: #3A3A3A !important;
+        border: 1px solid #444444 !important;
+    }}
+    
+    /* Style the placeholder text */
+    .stTextInput > div > div > input::placeholder {{
+        color: #AAAAAA !important;
     }}
     </style>
     """, unsafe_allow_html=True)
