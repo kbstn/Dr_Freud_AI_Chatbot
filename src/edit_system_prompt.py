@@ -23,7 +23,15 @@ def load_preset(preset_name):
         return preset_file.read_text()
     return ""
 
-def show_prompt_editor(initial_prompt):
+def delete_preset(preset_name):
+    """Delete a specific preset"""
+    preset_file = Path("presets") / f"{preset_name}.txt"
+    if preset_file.exists():
+        os.remove(preset_file)
+        return True
+    return False
+
+def show_prompt_editor():
     """Show the system prompt editor interface"""
     st.subheader("Hier können Sie Einfluss auf Dr. Freuds Persönlichkeit nehmen")
     
@@ -33,7 +41,7 @@ def show_prompt_editor(initial_prompt):
     # If no presets exist, create a default one
     if not presets:
         default_preset = "default"
-        save_preset(default_preset, initial_prompt)
+        save_preset(default_preset, st.session_state.prompt_editor)
         presets = [default_preset]
     
     # Create columns for preset controls
@@ -43,7 +51,7 @@ def show_prompt_editor(initial_prompt):
         # Find if current prompt matches any preset
         current_preset = None
         for preset in presets:
-            if load_preset(preset) == initial_prompt:
+            if load_preset(preset) == st.session_state.prompt_editor:
                 current_preset = preset
                 break
         
@@ -59,10 +67,18 @@ def show_prompt_editor(initial_prompt):
     
     with col2:
         st.write("\n")  # For vertical alignment
-        if st.button("Voreinstellung laden", key="load_preset_btn"):
-            if selected_preset:
-                initial_prompt = load_preset(selected_preset)
-                st.session_state.prompt_editor = initial_prompt
+        col2_1, col2_2 = st.columns(2)
+        with col2_1:
+            if st.button("Laden", key="load_preset_btn"):
+                if selected_preset:
+                    st.session_state.prompt_editor = load_preset(selected_preset)
+                    st.rerun()
+        with col2_2:
+            if st.button("Löschen", key="delete_preset_btn"):
+                if selected_preset:
+                    delete_preset(selected_preset)
+                    st.toast(f'Voreinstellung "{selected_preset}" wurde gelöscht.')
+                    st.rerun()
     
     # Add CSS for the apply button
     st.markdown("""
@@ -90,10 +106,10 @@ def show_prompt_editor(initial_prompt):
     # Text area for editing
     prompt_text = st.text_area(
         "Verändere Dr. Freuds Persönlichkeit",
-        value=initial_prompt,
-        height=400,
+        height=350,
         key="prompt_editor"
     )
+
     
     # Save as new preset
     new_preset_col1, new_preset_col2 = st.columns([3, 1])
@@ -115,4 +131,4 @@ def show_prompt_editor(initial_prompt):
         return prompt_text
     
     # If not applying, return the current prompt
-    return initial_prompt
+    return prompt_text

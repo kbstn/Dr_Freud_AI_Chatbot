@@ -34,7 +34,7 @@ def show_settings():
         "Temperature",
         min_value=0.0,
         max_value=2.0,
-        value=0.7,
+        value=0.35,
         step=0.1,
         help="Higher values make output more random, lower values more deterministic"
     )
@@ -44,7 +44,7 @@ def show_settings():
 def show_chat_interface():
     """Show the main chat interface with a fixed layout."""
     # We use a container with a fixed height to ensure the chat input stays at the bottom.
-    message_container = st.container(height=700)
+    message_container = st.container(height=550)
 
     # Display chat messages from history
     for message in st.session_state.messages:
@@ -52,7 +52,7 @@ def show_chat_interface():
             st.markdown(message["content"])
 
     # Accept user input
-    if prompt := st.chat_input("Wer stört mich bei der Arbeit?"):
+    if prompt := st.chat_input("Stören Sie Dr. Freud beim Nachdenken!"):
         # Add user message to chat history and display it
         st.session_state.messages.append({"role": "user", "content": prompt})
         with message_container.chat_message("user"):
@@ -167,7 +167,7 @@ def main():
             st.session_state.prompt_editor = st.session_state.current_prompt
             
         # Get the updated prompt from the editor
-        updated_prompt = show_prompt_editor(st.session_state.prompt_editor)
+        updated_prompt = show_prompt_editor()
         
         # Update the current prompt only if it's different
         if updated_prompt != st.session_state.current_prompt:
@@ -178,6 +178,7 @@ def main():
 
             # If the prompt has changed, clear the chat history
             if st.session_state.last_prompt != st.session_state.current_prompt:
+                get_agent.clear() # Invalidate the cached agent
                 st.session_state.messages = []
                 st.session_state.last_prompt = st.session_state.current_prompt
                 st.toast("Dr. Freud's personality has been updated. The conversation is reset.")
