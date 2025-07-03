@@ -5,7 +5,7 @@ from pydantic_ai.models.openai import OpenAIResponsesModel, OpenAIResponsesModel
 from openai.types.responses import WebSearchToolParam
 import os
 from dotenv import load_dotenv
-
+import base64
 import sys
 from pathlib import Path
 
@@ -82,7 +82,20 @@ def show_chat_interface():
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# Initialize the agent with cache that depends on all parameters including system_prompt
+def get_image_as_base64(path: str) -> str:
+    """Reads an image file and returns it as a base64 encoded string."""
+    try:
+        img_path = Path(path)
+        if not img_path.is_file():
+            return ""
+        with open(img_path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except Exception as e:
+        print(f"Error reading image {path}: {e}")
+        return ""
+
+
 @st.cache_resource(hash_funcs={Agent: lambda _: None}, show_spinner="Initializing Dr. Freud's brain...")
 def get_agent(model_name, temperature, enable_web_search, system_prompt):
     """Initializes and returns the Pydantic-AI Agent based on current settings."""
@@ -108,25 +121,46 @@ def get_agent(model_name, temperature, enable_web_search, system_prompt):
     return agent
 
 def main():
+    # Prepare CSS for background image
+    img_base64 = get_image_as_base64("files/drfreud_bg.jpeg")
+    background_image_style = ""
+    if img_base64:
+        background_image_style = f"""
+        background-image: url(data:image/jpeg;base64,{img_base64});
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        """
+
     # Inject custom CSS for mobile responsiveness
-    st.markdown("""
+    st.markdown(f"""
     <style>
-    @media (max-width: 768px) {
+    @media (max-width: 768px) {{
         /* Stack columns vertically on mobile */
-        div[data-testid="stHorizontalBlock"] {
+        div[data-testid="stHorizontalBlock"] {{
             flex-direction: column;
-        }
+        }}
         /* Hide header images on mobile to save vertical space */
-        div[data-testid="stHorizontalBlock"] div[data-testid="stImage"] {
+        div[data-testid="stHorizontalBlock"] div[data-testid="stImage"] {{
             display: none;
-        }
-        /* Automatically adjust chat container height on mobile.
-           This calculates the available vertical space by subtracting an
-           estimated height for the header and chat input from the total viewport height. */
-        div[style*="height: 550px"] {
+        }}
+        /* Reduce title size on mobile */
+        h1 {{
+            font-size: 1.5rem !important;
+            text-align: center;
+        }}
+        /* Style chat container with background and adaptive height */
+        div[style*="height: 550px"] {{
+            {background_image_style}
             height: calc(100vh - 280px) !important;
-        }
-    }
+        }}
+        /* Add a semi-transparent background to chat messages for readability */
+        div[data-testid="stChatMessage"] {{
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }}
+    }}
     </style>
     """, unsafe_allow_html=True)
 
