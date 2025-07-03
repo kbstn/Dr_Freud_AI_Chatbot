@@ -112,19 +112,13 @@ def main():
     st.markdown("""
     <style>
     @media (max-width: 768px) {
-        /* Hide the prompt editor column on mobile to prioritize chat */
-        div[data-testid="stHorizontalBlock"] > div:nth-of-type(2) {
-            display: none;
+        /* Stack columns vertically on mobile */
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: column;
         }
-        /* Hide header images on mobile */
-        div[data-testid="stImage"] {
+        /* Hide header images on mobile to save vertical space */
+        div[data-testid="stHorizontalBlock"] div[data-testid="stImage"] {
             display: none;
-        }
-        /* Adjust chat container height for mobile.
-           NOTE: This selector is tied to the height=550 parameter in st.container().
-           If you change the height in the Python code, you must update it here too. */
-        div[style*="height: 550px"] {
-            height: 75vh !important;
         }
     }
     </style>
@@ -136,7 +130,7 @@ def main():
     if "model_name" not in st.session_state:
         st.session_state.model_name = "gpt-4o-mini"
     if "temperature" not in st.session_state:
-        st.session_state.temperature = 0.7
+        st.session_state.temperature = 0.35
     if "enable_web_search" not in st.session_state:
         st.session_state.enable_web_search = False
     if "current_prompt" not in st.session_state:
@@ -144,10 +138,9 @@ def main():
     if "last_prompt" not in st.session_state:
         st.session_state.last_prompt = st.session_state.current_prompt
 
-    # Set page config
     st.set_page_config(
         page_title="Dr. Freud der komische Vogel 🦜",
-        page_icon="🦜",
+        page_icon="🧠",
         layout="wide",
         initial_sidebar_state="collapsed"
     )
@@ -156,8 +149,6 @@ def main():
     col1, col2 = st.columns([2, 1])
 
     with st.sidebar:
-        # hide sidebar when loading page
-        
         # Show settings
         model_name, temperature, enable_web_search = show_settings()
         
@@ -167,12 +158,10 @@ def main():
         st.session_state.enable_web_search = enable_web_search
 
     with col1:
-
         headercol1, headercol2, headercol3 = st.columns([1,5,1])
         with headercol1:
             st.image("files/drfreud.png", width=200)
         with headercol2:
-            
             st.markdown("""
         <h1 style='text-align: center;'>    Besprechen Sie das bitte mit Dr. Freud!</h1>
     """, unsafe_allow_html=True)
@@ -194,11 +183,8 @@ def main():
         # Update the current prompt only if it's different
         if updated_prompt != st.session_state.current_prompt:
             st.session_state.current_prompt = updated_prompt
-            # Note: We don't need to update st.session_state.prompt_editor here.
-            # The widget's state is the source of truth and is already updated.
-            # Trying to set it here causes the StreamlitAPIException.
 
-            # If the prompt has changed, clear the chat history
+            # If the prompt has changed, clear the agent cache and chat history
             if st.session_state.last_prompt != st.session_state.current_prompt:
                 get_agent.clear() # Invalidate the cached agent
                 st.session_state.messages = []
