@@ -121,44 +121,88 @@ def get_agent(model_name, temperature, enable_web_search, system_prompt):
     return agent
 
 def main():
+    # Set page config first to prevent layout shift
+    st.set_page_config(
+        page_title="Dr. Freud der komische Vogel 🦜",
+        page_icon="🧠",
+        layout="wide",
+        initial_sidebar_state="collapsed"
+    )
+    
     # Prepare CSS for background image
     img_base64 = get_image_as_base64("files/drfreud_bg.jpeg")
-    background_image_style = ""
-    if img_base64:
-        background_image_style = f"""
-        background-image: url(data:image/jpeg;base64,{img_base64});
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        """
+    background_image_style = f"""
+    background-image: url(data:image/jpeg;base64,{img_base64});
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    """ if img_base64 else ""
 
-    # Inject custom CSS for mobile responsiveness
+    # Inject custom CSS for responsive design
     st.markdown(f"""
     <style>
+    /* Base styles for all screen sizes */
+    .main .block-container {{
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }}
+    
+    /* Chat container styles */
+    .stChatFloatingInputContainer {{
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 800px;
+        background: white;
+        border-radius: 20px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 999;
+    }}
+    
+    /* Chat message area */
+    [data-testid="stChatMessage"] {{
+        background-color: rgba(255, 255, 255, 0.85);
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        margin: 0.5rem 0;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }}
+    
+    /* Mobile-specific styles */
     @media (max-width: 768px) {{
-        /* Stack columns vertically on mobile */
-        div[data-testid="stHorizontalBlock"] {{
-            flex-direction: column;
+        .main .block-container {{
+            padding-top: 0.5rem;
+            padding-bottom: 120px; /* Space for fixed input */
         }}
-        /* Hide header images on mobile to save vertical space */
+        
+        h1 {{
+            font-size: 1.5rem !important;
+            margin-top: 0.5rem !important;
+            text-align: center;
+        }}
+        
+        /* Chat container with background */
+        [data-testid="stChatMessageContainer"] {{
+            {background_image_style}
+            padding: 1rem;
+            margin-bottom: 100px; /* Space for fixed input */
+        }}
+        
+        /* Hide header images on mobile to save space */
         div[data-testid="stHorizontalBlock"] div[data-testid="stImage"] {{
             display: none;
         }}
-        /* Reduce title size on mobile */
-        h1 {{
-            font-size: 1.5rem !important;
-            text-align: center;
-        }}
-        /* Style chat container with background and adaptive height */
-        div[style*="height: 550px"] {{
+    }}
+    
+    /* Desktop-specific styles */
+    @media (min-width: 769px) {{
+        [data-testid="stChatMessageContainer"] {{
             {background_image_style}
-            height: calc(100vh - 280px) !important;
-        }}
-        /* Add a semi-transparent background to chat messages for readability */
-        div[data-testid="stChatMessage"] {{
-            background-color: rgba(255, 255, 255, 0.85);
-            border-radius: 10px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            min-height: 60vh;
+            padding: 2rem;
         }}
     }}
     </style>
@@ -177,13 +221,6 @@ def main():
         st.session_state.current_prompt = SYSTEM_PROMPT
     if "last_prompt" not in st.session_state:
         st.session_state.last_prompt = st.session_state.current_prompt
-
-    st.set_page_config(
-        page_title="Dr. Freud der komische Vogel 🦜",
-        page_icon="🧠",
-        layout="wide",
-        initial_sidebar_state="collapsed"
-    )
 
     # Create columns for chat and prompt editor
     col1, col2 = st.columns([2, 1])
