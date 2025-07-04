@@ -14,8 +14,8 @@ _agent_cache = {}
 
 @st.cache_resource(hash_funcs={Agent: lambda _: None}, show_spinner=TEXT_CONTENT["agent_init_message"])
 @st.cache_resource(ttl=CACHE_CONFIG["agent_ttl"])
-def _create_base_agent(model_name, temperature, enable_web_search):
-    """Internal function to create and cache the base agent (without system prompt)."""
+def get_agent(model_name, temperature, enable_web_search, system_prompt):
+    """Initializes and returns the Pydantic-AI Agent with current settings."""
     try:
         # Initialize model with settings
         model = OpenAIResponsesModel(model_name)
@@ -24,48 +24,27 @@ def _create_base_agent(model_name, temperature, enable_web_search):
             max_tokens=DEFAULT_MODEL_SETTINGS["max_tokens"]
         )
         
-        # Create base agent structure without system prompt
-        agent_data = {
-            "model": model,
-            "model_settings": model_settings,
-            "enable_web_search": enable_web_search
-        }
-        
-        return agent_data
-    except Exception as e:
-        st.error(f"Error initializing agent: {str(e)}")
-        return None
-
-def get_agent(model_name, temperature, enable_web_search, full_system_prompt):
-    """Get the AI agent with current settings and full system prompt."""
-    # Get cached base agent data
-    agent_data = _create_base_agent(model_name, temperature, enable_web_search)
-    
-    if agent_data is None:
-        return None
-    
-    try:
-        # Create agent with full system prompt (including conversation history)
+        # Initialize agent
         agent = Agent(
-            model=agent_data["model"],
-            model_settings=agent_data["model_settings"],
-            system_prompt=full_system_prompt
+            model=model,
+            model_settings=model_settings,
+            system_prompt=system_prompt
         )
         
         # Add web search if enabled
-        if agent_data["enable_web_search"]:
+        if enable_web_search:
             agent.model.model_settings.openai_builtin_tools = [
                 WebSearchToolParam(type='web_search_preview')
             ]
         
         return agent
     except Exception as e:
-        st.error(f"Error creating agent with system prompt: {str(e)}")
+        st.error(f"Error initializing agent: {str(e)}")
         return None
 
 def clear_agent_cache():
     """Clear the agent cache to force recreation."""
-    _create_base_agent.clear()
+    get_agent.clear()
 
 def get_agent_response(agent, prompt):
     """Get response from the agent and handle different response formats."""

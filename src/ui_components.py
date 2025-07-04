@@ -61,9 +61,6 @@ def show_chat_interface():
     
     # Chat input
     if prompt := st.chat_input(TEXT_CONTENT["chat_placeholder"]):
-        # Add user message to chat history
-        add_message("user", prompt)
-        
         # Display user message
         with message_container.chat_message("user"):
             st.markdown(prompt)
@@ -71,7 +68,7 @@ def show_chat_interface():
         # Get assistant response
         with message_container.chat_message("assistant"):
             with st.spinner(TEXT_CONTENT["thinking_message"]):
-                # Format conversation history for context
+                # Format conversation history for context (BEFORE adding current message)
                 conversation_history = get_conversation_history()
                 
                 # Get agent with full system prompt (including conversation history)
@@ -86,8 +83,66 @@ def show_chat_interface():
                 full_response = get_agent_response(agent, prompt)
                 st.markdown(full_response)
         
-        # Add assistant response to chat history
+        # Add BOTH user message and assistant response to chat history AFTER getting response
+        add_message("user", prompt)
         add_message("assistant", full_response)
+
+def show_agent_memory_log():
+    """Show the agent's current memory in an expandable debug section."""
+    from .session_manager import get_conversation_history
+    
+    with st.expander("🔍 Agent Memory Debug Log", expanded=False):
+        st.subheader("Current Session State")
+        
+        # Show current messages count
+        message_count = len(st.session_state.messages)
+        st.metric("Total Messages", message_count)
+        
+        # Show conversation history
+        conversation_history = get_conversation_history()
+        st.subheader("Conversation History (sent to agent)")
+        if conversation_history:
+            st.text_area(
+                "Formatted History:", 
+                conversation_history, 
+                height=200,
+                disabled=True,
+                key="debug_history"
+            )
+        else:
+            st.info("No conversation history yet")
+        
+        # Show current system prompt
+        st.subheader("Base System Prompt")
+        st.text_area(
+            "Current Prompt:", 
+            st.session_state.current_prompt, 
+            height=150,
+            disabled=True,
+            key="debug_prompt"
+        )
+        
+        # Show what would be sent to agent for next message
+        if conversation_history:
+            full_system_prompt = f"{st.session_state.current_prompt}\n\nPrevious conversation:\n{conversation_history}"
+            st.subheader("Full System Prompt (next agent call)")
+            st.text_area(
+                "Complete Prompt:", 
+                full_system_prompt, 
+                height=300,
+                disabled=True,
+                key="debug_full_prompt"
+            )
+        
+        # Show model settings
+        st.subheader("Model Settings")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Model", st.session_state.model_name)
+        with col2:
+            st.metric("Temperature", st.session_state.temperature)
+        with col3:
+            st.metric("Web Search", st.session_state.enable_web_search)
 
 def show_header_toggle():
     """Show the header visibility toggle control."""

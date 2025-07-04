@@ -14,7 +14,7 @@ PAGE_CONFIG = {
 # Model Configuration
 DEFAULT_MODEL_SETTINGS = {
     "model_name": "gpt-4o-mini",
-    "temperature": 0.35,
+    "temperature": 0.45,
     "max_tokens": 1000,
     "enable_web_search": False
 }

@@ -25,7 +25,8 @@ from src.ui_components import (
     show_settings, 
     show_header, 
     show_chat_interface, 
-    show_header_toggle
+    show_header_toggle,
+    show_agent_memory_log
 )
 from src.edit_system_prompt import show_prompt_editor
 
@@ -74,6 +75,9 @@ def main():
         # Apply header visibility styles
         if not show_header_flag:
             st.markdown(get_header_visibility_styles(), unsafe_allow_html=True)
+    
+    # Agent memory debug log - spans full width below both columns
+    show_agent_memory_log()
 
 if __name__ == "__main__":
     main()

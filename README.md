@@ -1,20 +1,22 @@
 # 🧠 Dr. Freud AI Chatbot
 
-A Streamlit-based AI chatbot that simulates a conversation with a mutated version of Dr. Sigmund Freud in a post-apocalyptic setting. The chatbot responds exclusively in German, embodying the persona of Dr. Freud with psychological insights and a distinctive communication style.
+A Streamlit-based AI chatbot that simulates conversations with Dr. Sigmund Freud in a post-apocalyptic setting. The chatbot uses OpenAI's API through the Pydantic AI framework and responds exclusively in German with a distinctive personality.
 
 ## 🚀 Features
 
-- Interactive chat interface with a unique AI personality
-- Post-apocalyptic Dr. Freud persona with distinct behavioral traits
-- German language responses with psychological depth
-- Containerized deployment with Docker
-- Traefik reverse proxy support for production deployment
+- Interactive chat interface with conversation memory
+- Real-time personality editing and preset management
+- Post-apocalyptic Dr. Freud persona with psychological depth
+- German language responses with distinctive behavioral traits
+- Agent memory debug log for development insights
+- Web search capabilities (optional)
+- Containerized deployment with Docker and Traefik support
 
 ## 🛠️ Prerequisites
 
-- Docker and Docker Compose
+- Docker and Docker Compose installed on your system
 - OpenAI API key
-- Git
+- Git (for cloning the repository)
 
 ## 🚀 Quick Start
 
@@ -27,10 +29,10 @@ A Streamlit-based AI chatbot that simulates a conversation with a mutated versio
 2. **Set up environment variables**
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration
+   # Edit .env file with your OpenAI API key and other settings
    ```
 
-3. **Build and start the application**
+3. **Build and run with Docker Compose**
    ```bash
    docker compose up -d --build
    ```
@@ -39,7 +41,7 @@ A Streamlit-based AI chatbot that simulates a conversation with a mutated versio
    - Local: http://localhost:8501
    - Or via your configured domain if using Traefik
 
-## 🔧 Configuration
+## ⚙️ Configuration
 
 Edit the `.env` file to customize:
 - `OPENAI_API_KEY`: Your OpenAI API key (required)
@@ -47,9 +49,21 @@ Edit the `.env` file to customize:
 - `STREAMLIT_SERVER_ADDRESS`: Network interface to bind to (default: 0.0.0.0)
 - `TRAEFIK_HOST`: Your domain name if using Traefik
 
-## 🐳 Using the Deployment Script
+## 🐳 Local Development
 
-For easy deployment, use the provided script:
+For local development without Docker:
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application locally
+streamlit run app.py
+```
+
+## 🚀 Production Deployment
+
+For easy production deployment, use the provided script:
 
 ```bash
 chmod +x deploy.sh
@@ -60,21 +74,45 @@ The script will guide you through the setup process and start the application.
 
 ## 🛑 Stopping the Application
 
-To stop the application:
-
 ```bash
 docker compose down
 ```
 
+## 🧩 Application Architecture
+
+The application is built with a modular architecture:
+
+- **`app.py`**: Main application entry point
+- **`src/config.py`**: Configuration constants and settings
+- **`src/styles.py`**: CSS styling functions
+- **`src/session_manager.py`**: Session state and conversation management
+- **`src/agent_manager.py`**: AI agent creation and caching
+- **`src/ui_components.py`**: Reusable UI components
+- **`src/prompts.py`**: System prompts and personality definitions
+- **`src/edit_system_prompt.py`**: Personality editing functionality
+- **`presets/`**: Personality preset files
+
 ## 🤖 About the AI Persona
 
-The chatbot is designed to simulate Dr. Sigmund Freud in a post-apocalyptic setting, with the following characteristics:
-- Knowledge limited to pre-1960 information
-- Distinct personality traits including mood swings and fixations
-- Passive-aggressive communication style
+The chatbot simulates Dr. Sigmund Freud in a post-apocalyptic setting with:
+- Knowledge limited to pre-1960 technology
+- Arrogant, passive-aggressive personality
 - Responds exclusively in German
-- May react strongly to being addressed without the proper title "Dr. Freud"
+- Psychological analysis of every interaction
+- Strong reactions to improper addressing (requires "Dr. Freud")
+- Conversation memory that persists throughout the session
+
+## 🔍 Debug Features
+
+The application includes a comprehensive debug log (expandable section at the bottom) showing:
+- **Current Session State**: Total message count and model settings
+- **Conversation History**: Formatted history sent to the agent
+- **System Prompts**: Base personality prompt and complete prompt with conversation context
+- **Real-time Memory State**: Live updates as you chat
+- **Model Configuration**: Current model, temperature, and web search settings
+
+This debug log helps verify that conversation memory is working correctly and shows exactly what context the AI agent receives.
 
 ## 📝 License
 
-[Specify your license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
