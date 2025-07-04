@@ -3,23 +3,22 @@
 # Exit on error
 set -e
 
-# Get the directory where the script is run from
-SCRIPT_DIR="$(pwd)"
-echo "Running deployment from: $SCRIPT_DIR"
+# Work in the current directory (where the script is run from)
+echo "Working in current directory: $(pwd)"
 
 # Check if we're in a git repository
 if [ ! -d ".git" ]; then
-    echo "❌ Error: This script must be run from a git repository directory"
-    echo "Please cd to your Dr_Freud_AI_Chatbot directory and run the script"
+    echo "❌ Error: This script must be run from the Dr_Freud_AI_Chatbot git repository"
+    echo "Please cd to your repository directory and run the script"
     exit 1
 fi
 
 # Pull latest changes instead of cloning
-echo "📥 Pulling latest changes from repository..."
+echo "📥 Pulling latest changes..."
 git fetch origin
 git reset --hard origin/main
 
-echo "📁 Files in current directory:"
+echo "📁 Files in directory:"
 ls -la
 
 # Copy .env.example to .env if it doesn't exist
