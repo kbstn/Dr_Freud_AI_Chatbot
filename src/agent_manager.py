@@ -12,8 +12,7 @@ from .config import DEFAULT_MODEL_SETTINGS, CACHE_CONFIG, TEXT_CONTENT
 # Global cache for agent - will be cleared when needed
 _agent_cache = {}
 
-@st.cache_resource(hash_funcs={Agent: lambda _: None}, show_spinner=TEXT_CONTENT["agent_init_message"])
-@st.cache_resource(ttl=CACHE_CONFIG["agent_ttl"])
+@st.cache_resource(hash_funcs={Agent: lambda _: None}, ttl=CACHE_CONFIG["agent_ttl"], show_spinner=TEXT_CONTENT["agent_init_message"])
 def get_agent(model_name, temperature, enable_web_search, system_prompt):
     """Initializes and returns the Pydantic-AI Agent with current settings."""
     try:
