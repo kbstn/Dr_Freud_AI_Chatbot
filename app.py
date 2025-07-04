@@ -27,7 +27,7 @@ def show_settings():
     st.sidebar.title("⚙️ Settings")
     model_name = st.sidebar.selectbox(
         "Choose a model",
-        ["gpt-4.1-nano", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo", "gpt-4o-mini"],
+        ["gpt-4o-mini", "gpt-4.1-nano", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
         index=0
     )
     temperature = st.sidebar.slider(
@@ -43,33 +43,48 @@ def show_settings():
 
 def show_chat_interface():
     """Show the main chat interface with a fixed layout."""
-    # We use a container with a fixed height to ensure the chat input stays at the bottom.
-    message_container = st.container(height=550)
-
+    # Initialize chat history if it doesn't exist
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
     # Display chat messages from history
+    message_container = st.container(height=500)
+    
+    # Show chat history
     for message in st.session_state.messages:
         with message_container.chat_message(message["role"]):
             st.markdown(message["content"])
-
-    # Accept user input
+    
+    # Chat input
     if prompt := st.chat_input("Stören Sie Dr. Freud beim Nachdenken!"):
-        # Add user message to chat history and display it
+        # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # Display user message
         with message_container.chat_message("user"):
             st.markdown(prompt)
         
         # Get assistant response
         with message_container.chat_message("assistant"):
             with st.spinner("Dr. Freud denkt nach..."):
+                # Format conversation history for context
+                conversation_history = "\n".join(
+                    f"{msg['role'].capitalize()}: {msg['content']}" 
+                    for msg in st.session_state.messages
+                )
+                
+                # Get agent with conversation context
                 agent = get_agent(
                     st.session_state.model_name,
                     st.session_state.temperature,
                     st.session_state.enable_web_search,
-                    st.session_state.current_prompt
+                    f"{st.session_state.current_prompt}\n\nPrevious conversation:\n{conversation_history}"
                 )
+                
+                # Get response
                 response = agent.run_sync(prompt)
                 
-                # Handle different response formats
+                # Handle response format
                 if hasattr(response, 'output'):
                     full_response = response.output
                 elif hasattr(response, 'content'):
@@ -97,28 +112,35 @@ def get_image_as_base64(path: str) -> str:
 
 
 @st.cache_resource(hash_funcs={Agent: lambda _: None}, show_spinner="Initializing Dr. Freud's brain...")
+@st.cache_resource(ttl=3600)  # Cache agent for 1 hour
+
 def get_agent(model_name, temperature, enable_web_search, system_prompt):
-    """Initializes and returns the Pydantic-AI Agent based on current settings."""
-    # Initialize model
-    model = OpenAIResponsesModel(model_name)
-    
-    # Create model settings with temperature
-    model_settings = OpenAIResponsesModelSettings(temperature=temperature)
-    
-    # Initialize agent with model, settings, and system prompt
-    agent = Agent(
-        model=model,
-        model_settings=model_settings,
-        system_prompt=system_prompt
-    )
-    
-    # Enable web search if needed
-    if enable_web_search:
-        agent.model.model_settings.openai_builtin_tools = [
-            WebSearchToolParam(type='web_search_preview')
-        ]
-    
-    return agent
+    """Initializes and returns the Pydantic-AI Agent with current settings."""
+    try:
+        # Initialize model with settings
+        model = OpenAIResponsesModel(model_name)
+        model_settings = OpenAIResponsesModelSettings(
+            temperature=temperature,
+            max_tokens=1000
+        )
+        
+        # Initialize agent
+        agent = Agent(
+            model=model,
+            model_settings=model_settings,
+            system_prompt=system_prompt
+        )
+        
+        # Add web search if enabled
+        if enable_web_search:
+            agent.model.model_settings.openai_builtin_tools = [
+                WebSearchToolParam(type='web_search_preview')
+            ]
+        
+        return agent
+    except Exception as e:
+        st.error(f"Error initializing agent: {str(e)}")
+        return None
 
 def main():
     # Set page config first to prevent layout shift
@@ -128,18 +150,7 @@ def main():
         layout="wide",
         initial_sidebar_state="collapsed"
     )
-    # Remove invisible Streamlit header
-#    st.markdown("""
-#    <style>
-#        .block-container {
-#            padding-top: 1rem;  /* Reduce top padding */
-#        }
 
-#        header {
-#            visibility: hidden;  /* Optionally hide Streamlit header */
-#        }
-#    </style>
-#""", unsafe_allow_html=True)
 
     # Prepare CSS for background image
     img_base64 = get_image_as_base64("files/drfreud_bg.jpeg")
@@ -313,6 +324,28 @@ def main():
                 st.session_state.last_prompt = st.session_state.current_prompt
                 st.toast("Dr. Freud's personality has been updated. The conversation is reset.")
                 st.rerun()
-
+    # Add radio button to toggle header visibility in the second column
+    with col2:
+        st.write("\n")  # Add some space
+        show_header = st.radio(
+            "Show Streamlit Header",
+            ["No", "Yes"],
+            index=0,  # Default to "No"
+            horizontal=True,
+            key="header_toggle"
+        )
+    
+    # Apply CSS based on radio button selection
+    if show_header == "No":
+        st.markdown("""
+        <style>
+            .block-container {
+                padding-top: 1rem;
+            }
+            header {
+                visibility: hidden;
+            }
+        </style>
+        """, unsafe_allow_html=True)
 if __name__ == "__main__":
     main()
