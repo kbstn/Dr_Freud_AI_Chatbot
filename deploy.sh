@@ -54,7 +54,7 @@ OPENAI_API_KEY=$OPENAI_API_KEY
 
 # Traefik settings - update with your domain for deploying it in traefik environment
 TRAEFIK_HOST=$TRAEFIK_HOST
-EOL"
+EOL
     
     echo ".env file has been configured with your settings."
 fi
@@ -67,6 +67,7 @@ echo "Starting Docker Compose..."
 sudo docker compose up -d --build
 
 echo -e "\nContainer is starting up..."
+PORT=$(grep STREAMLIT_SERVER_PORT .env | cut -d= -f2 2>/dev/null || echo "8501")
 echo "Dr. Freud AI Chatbot will be available at http://localhost:$PORT"
 
 # Show logs
