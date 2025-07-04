@@ -6,7 +6,7 @@ Contains reusable UI elements and layouts.
 import streamlit as st
 from .config import AVAILABLE_MODELS, DEFAULT_MODEL_SETTINGS, UI_CONFIG, TEXT_CONTENT
 from .session_manager import add_message, get_conversation_history
-from .agent_manager import get_agent, get_agent_response
+from .agent_manager import get_agent_response_with_context
 
 def show_settings():
     """Show settings in the sidebar and return the values."""
@@ -71,16 +71,15 @@ def show_chat_interface():
                 # Format conversation history for context (BEFORE adding current message)
                 conversation_history = get_conversation_history()
                 
-                # Get agent with full system prompt (including conversation history)
-                agent = get_agent(
+                # Get response with conversation context
+                full_response = get_agent_response_with_context(
                     st.session_state.model_name,
                     st.session_state.temperature,
                     st.session_state.enable_web_search,
-                    f"{st.session_state.current_prompt}\n\nPrevious conversation:\n{conversation_history}"
+                    st.session_state.current_prompt,
+                    prompt,
+                    conversation_history
                 )
-                
-                # Get response
-                full_response = get_agent_response(agent, prompt)
                 st.markdown(full_response)
         
         # Add BOTH user message and assistant response to chat history AFTER getting response

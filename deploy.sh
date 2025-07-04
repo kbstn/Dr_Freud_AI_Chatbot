@@ -3,32 +3,29 @@
 # Exit on error
 set -e
 
-# Set project directory
-PROJECT_DIR="/opt/containers/Dr_Freud_AI_Chatbot"
+# Get the directory where the script is run from
+SCRIPT_DIR="$(pwd)"
+echo "Running deployment from: $SCRIPT_DIR"
 
-# Create directory if it doesn't exist
-sudo mkdir -p /opt/containers
-
-# Navigate to containers directory
-cd /opt/containers/
-
-# Remove existing directory if it exists
-if [ -d "$PROJECT_DIR" ]; then
-    echo "Removing existing project directory..."
-    sudo rm -rf "$PROJECT_DIR"
+# Check if we're in a git repository
+if [ ! -d ".git" ]; then
+    echo "❌ Error: This script must be run from a git repository directory"
+    echo "Please cd to your Dr_Freud_AI_Chatbot directory and run the script"
+    exit 1
 fi
 
-# Clone the repository
-echo "Cloning repository..."
-sudo git clone https://github.com/kbstn/Dr_Freud_AI_Chatbot.git
+# Pull latest changes instead of cloning
+echo "📥 Pulling latest changes from repository..."
+git fetch origin
+git reset --hard origin/main
 
-# Navigate to project directory
-cd "$PROJECT_DIR"
+echo "📁 Files in current directory:"
+ls -la
 
 # Copy .env.example to .env if it doesn't exist
 if [ ! -f ".env" ]; then
     echo "Creating .env file from example..."
-    sudo cp .env.example .env
+    cp .env.example .env
     
     # Set default values from .env.example if they exist
     DEFAULT_PORT=$(grep -E '^STREAMLIT_SERVER_PORT=' .env.example | cut -d '=' -f2- || echo "8501")
@@ -50,7 +47,7 @@ if [ ! -f ".env" ]; then
     OPENAI_API_KEY=${OPENAI_API_KEY:-$DEFAULT_OPENAI_API_KEY}
     
     # Update .env file with user values
-    sudo sh -c "cat > .env << EOL
+    cat > .env << EOL
 # Application settings
 STREAMLIT_SERVER_PORT=$PORT
 STREAMLIT_SERVER_ADDRESS=$ADDRESS
