@@ -129,17 +129,17 @@ def main():
         initial_sidebar_state="collapsed"
     )
     # Remove invisible Streamlit header
-    st.markdown("""
-    <style>
-        .block-container {
-            padding-top: 1rem;  /* Reduce top padding */
-        }
+#    st.markdown("""
+#    <style>
+#        .block-container {
+#            padding-top: 1rem;  /* Reduce top padding */
+#        }
 
-        header {
-            visibility: hidden;  /* Optionally hide Streamlit header */
-        }
-    </style>
-""", unsafe_allow_html=True)
+#        header {
+#            visibility: hidden;  /* Optionally hide Streamlit header */
+#        }
+#    </style>
+#""", unsafe_allow_html=True)
 
     # Prepare CSS for background image
     img_base64 = get_image_as_base64("files/drfreud_bg.jpeg")
