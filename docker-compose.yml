@@ -5,7 +5,10 @@ services:
     ports:
       - ${STREAMLIT_SERVER_PORT}:${STREAMLIT_SERVER_PORT}
     volumes:
+      # Mount application code (for development)
       - .:/app
+      # Persistent volume for user data (presets)
+      - dr_freud_data:/app/presets
     networks:
       - proxy
     environment:  
@@ -21,6 +24,11 @@ services:
       - "traefik.http.routers.dr-freud-ssl.service=dr-freud-ssl"
       - "traefik.http.services.dr-freud-ssl.loadbalancer.server.port=${STREAMLIT_SERVER_PORT}"
       - "traefik.docker.network=proxy"
+    restart: unless-stopped
+
+volumes:
+  dr_freud_data:
+    driver: local
 
 networks:
   proxy:

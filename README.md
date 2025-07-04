@@ -63,14 +63,18 @@ streamlit run app.py
 
 ## 🚀 Production Deployment
 
-For easy production deployment, use the provided script:
-
+### Quick Start (with data persistence)
 ```bash
-chmod +x deploy.sh
-sudo ./deploy.sh
+chmod +x deploy-improved.sh
+sudo ./deploy-improved.sh
 ```
 
-The script will guide you through the setup process and start the application.
+### Regular Updates (preserves user data)
+```bash
+sudo ./deploy-update.sh
+```
+
+📖 **For detailed deployment options and data persistence solutions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
 
 ## 🛑 Stopping the Application
 
